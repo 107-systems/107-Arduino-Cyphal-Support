@@ -21,6 +21,7 @@ jobs:
       LIBRARIES: |
         # Install the library from the local path.
         - source-path: ./
+        - name: 107-Arduino-UniqueId
 
     strategy:
       fail-fast: false
