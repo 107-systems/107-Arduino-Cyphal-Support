@@ -9,7 +9,7 @@
 [![General Formatting Checks](https://github.com/107-systems/107-Arduino-Cyphal-Support/workflows/General%20Formatting%20Checks/badge.svg)](https://github.com/107-systems/107-Arduino-Cyphal-Support/actions?workflow=General+Formatting+Checks)
 [![Spell Check](https://github.com/107-systems/107-Arduino-Cyphal-Support/workflows/Spell%20Check/badge.svg)](https://github.com/107-systems/107-Arduino-Cyphal-Support/actions?workflow=Spell+Check)
 
-This library provides support functionality for building a [Cyphal](https://opencyphal.org/) application in combination with [107-Arduino-Cyphal](https://github.com/107-systems/107-Arduino-Cyphal).
+This library provides support functionality for building a complete [Cyphal](https://opencyphal.org/) application in combination with [107-Arduino-Cyphal](https://github.com/107-systems/107-Arduino-Cyphal).
 
 **Features:**
 * API for obtaining a unique 64-bit ID.
