@@ -13,7 +13,7 @@ This library provides support functionality for building a [Cyphal](https://open
 
 **Features:**
 * API for obtaining a unique 64-bit ID.
-* API for permanent register storage and retrieval. 
+* API for permanent register storage and retrieval.
 
 <p align="center">
   <a href="https://github.com/107-systems/l3xz"><img src="https://raw.githubusercontent.com/107-systems/.github/main/logo/l3xz-logo-memento-mori-github.png" width="30%"></a>
