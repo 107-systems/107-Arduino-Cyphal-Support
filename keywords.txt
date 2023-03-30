@@ -1,0 +1,22 @@
+#######################################
+# Syntax Coloring Map for 107-Arduino-Cyphal-Support
+#######################################
+
+#######################################
+# Class (KEYWORD1)
+#######################################
+
+cyphal	KEYWORD1
+support	KEYWORD1
+UniqueId	KEYWORD1
+
+#######################################
+# Methods and Functions (KEYWORD2)
+#######################################
+
+instance	KEYWORD2
+value	KEYWORD2
+
+#######################################
+# Constants (LITERAL1)
+#######################################
