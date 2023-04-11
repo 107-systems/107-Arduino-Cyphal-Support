@@ -5,8 +5,7 @@
  * Contributors: https://github.com/107-systems/107-Arduino-Cyphal-Support/graphs/contributors.
  */
 
-#ifndef INC_107_ARDUINO_CYPHAL_SUPPORT_H_
-#define INC_107_ARDUINO_CYPHAL_SUPPORT_H_
+#pragma once
 
 /**************************************************************************************
  * INCLUDE
@@ -14,5 +13,3 @@
 
 #include "storage/storage.h"
 #include "uniqueid/uniqueid.h"
-
-#endif /* INC_107_ARDUINO_CYPHAL_SUPPORT_H_ */
