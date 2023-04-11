@@ -13,6 +13,7 @@
 
 #if __GNUC__ >= 11
 
+#include <map>
 #include <string>
 #include <variant>
 #include <sstream>
@@ -23,6 +24,29 @@
 
 namespace cyphal::support::platform::storage
 {
+
+/**************************************************************************************
+ * CONSTANTS
+ **************************************************************************************/
+
+static std::map<littlefs::Error, Error> const LITTLEFS_TO_STORAGE_ERROR_MAP =
+{
+  {littlefs::Error::IO          , Error::IO},
+  {littlefs::Error::CORRUPT     , Error::Internal},
+  {littlefs::Error::NOENT       , Error::Existence},
+  {littlefs::Error::EXIST       , Error::Existence},
+  {littlefs::Error::NOTDIR      , Error::Internal},
+  {littlefs::Error::ISDIR       , Error::API},
+  {littlefs::Error::NOTEMPTY    , Error::API},
+  {littlefs::Error::BADF        , Error::Internal},
+  {littlefs::Error::FBIG        , Error::Internal},
+  {littlefs::Error::INVAL       , Error::API},
+  {littlefs::Error::NOSPC       , Error::API},
+  {littlefs::Error::NOMEM       , Error::Capacity},
+  {littlefs::Error::NOATTR      , Error::API},
+  {littlefs::Error::NAMETOOLONG , Error::API},
+  {littlefs::Error::NO_FD_ENTRY , Error::API},
+};
 
 /**************************************************************************************
  * CTOR/DTOR
@@ -46,12 +70,8 @@ auto KeyValueStorage_littlefs::get(const std::string_view key, const std::size_t
   /* Open the file containing the registry value. */
   auto const rc_open = _filesystem.open(key_filename.str(), littlefs::OpenFlag::RDONLY);
   if (std::holds_alternative<littlefs::Error>(rc_open))
-  {
-    if (std::get<littlefs::Error>(rc_open) == littlefs::Error::NOENT)
-      return Error::Existence;
-    else
-      return Error::IO;
-  }
+    return LITTLEFS_TO_STORAGE_ERROR_MAP.at(std::get<littlefs::Error>(rc_open));
+
   littlefs::FileHandle const file_hdl = std::get<littlefs::FileHandle>(rc_open);
 
   /* Read from the file. */
@@ -59,7 +79,7 @@ auto KeyValueStorage_littlefs::get(const std::string_view key, const std::size_t
   if (std::holds_alternative<littlefs::Error>(rc_read))
   {
     (void)_filesystem.close(file_hdl);
-    return Error::IO;
+    return LITTLEFS_TO_STORAGE_ERROR_MAP.at(std::get<littlefs::Error>(rc_read));
   }
 
   (void)_filesystem.close(file_hdl);
@@ -77,7 +97,7 @@ auto KeyValueStorage_littlefs::put(const std::string_view key, const std::size_t
   /* Open the file containing the registry value. */
   auto const rc_open = _filesystem.open(key_filename.str(), littlefs::OpenFlag::WRONLY | littlefs::OpenFlag::CREAT | littlefs::OpenFlag::TRUNC);
   if (std::holds_alternative<littlefs::Error>(rc_open))
-    return Error::IO;
+    return LITTLEFS_TO_STORAGE_ERROR_MAP.at(std::get<littlefs::Error>(rc_open));
 
   littlefs::FileHandle const file_hdl = std::get<littlefs::FileHandle>(rc_open);
 
@@ -86,7 +106,7 @@ auto KeyValueStorage_littlefs::put(const std::string_view key, const std::size_t
   if (std::holds_alternative<littlefs::Error>(rc_write))
   {
     (void)_filesystem.close(file_hdl);
-    return Error::IO;
+    return LITTLEFS_TO_STORAGE_ERROR_MAP.at(std::get<littlefs::Error>(rc_write));
   }
 
   (void)_filesystem.close(file_hdl);
