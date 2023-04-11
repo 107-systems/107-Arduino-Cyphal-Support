@@ -47,7 +47,13 @@ auto KeyValueLittleFs::get(const std::string_view key, const std::size_t size, v
   auto const opt_file_hdl = _filesystem.open(key_filename.str(), static_cast<int>(littlefs::OpenFlag::RDONLY));
   if (!opt_file_hdl.has_value())
   {
-    result = platform::storage::Error::IO;
+    auto const lfs_err = _filesystem.last_error();
+
+    if (lfs_err == littlefs::Error::NOENT)
+      result = platform::storage::Error::Existence;
+    else
+      result = platform::storage::Error::IO;
+
     return result;
   }
   littlefs::FileHandle const file_hdl = opt_file_hdl.value();
