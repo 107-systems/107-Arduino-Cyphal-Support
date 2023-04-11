@@ -12,6 +12,7 @@
  * INCLUDE
  **************************************************************************************/
 
+#include "storage/storage.h"
 #include "uniqueid/uniqueid.h"
 
 #endif /* INC_107_ARDUINO_CYPHAL_SUPPORT_H_ */
