@@ -11,6 +11,8 @@
 
 #include "kv_littlefs.h"
 
+#if __GNUC__ >= 11
+
 #include <string>
 #include <variant>
 #include <sstream>
@@ -123,3 +125,5 @@ auto KeyValueStorage_littlefs::drop(const std::string_view key) -> std::optional
  **************************************************************************************/
 
 } /* cyphal::support::platform::storage */
+
+#endif /* __GNUC__ >= 11 */
