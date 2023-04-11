@@ -27,7 +27,7 @@ namespace cyphal::support::platform::storage
  * CLASS DECLARATION
  **************************************************************************************/
 
-class KeyValueStorage_littlefs final : public KeyValueStorageBase
+class KeyValueStorage_littlefs final : public interface::KeyValueStorage
 {
 private:
   littlefs::Filesystem & _filesystem;
