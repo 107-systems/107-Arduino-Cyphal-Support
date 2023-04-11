@@ -9,7 +9,7 @@
  * INCLUDE
  **************************************************************************************/
 
-#include "storage.h"
+#include "kv_littlefs.h"
 
 #include <string>
 #include <variant>
@@ -19,14 +19,14 @@
  * NAMESPACE
  **************************************************************************************/
 
-namespace cyphal::support
+namespace cyphal::support::platform::storage
 {
 
 /**************************************************************************************
  * CTOR/DTOR
  **************************************************************************************/
 
-KeyValueLittleFs::KeyValueLittleFs(littlefs::Filesystem & filesystem)
+KeyValueStorage_littlefs::KeyValueStorage_littlefs(littlefs::Filesystem & filesystem)
 : _filesystem{filesystem}
 { }
 
@@ -34,10 +34,10 @@ KeyValueLittleFs::KeyValueLittleFs(littlefs::Filesystem & filesystem)
  * PUBLIC MEMBER FUNCTIONS
  **************************************************************************************/
 
-auto KeyValueLittleFs::get(const std::string_view key, const std::size_t size, void* const data) const
-  -> std::variant<platform::storage::Error, std::size_t>
+auto KeyValueStorage_littlefs::get(const std::string_view key, const std::size_t size, void* const data) const
+  -> std::variant<Error, std::size_t>
 {
-  std::variant <platform::storage::Error, std::size_t> result;
+  std::variant <Error, std::size_t> result;
 
   auto const key_hash = std::hash<std::string_view>{}(key);
   std::stringstream key_filename;
@@ -50,9 +50,9 @@ auto KeyValueLittleFs::get(const std::string_view key, const std::size_t size, v
     auto const lfs_err = _filesystem.last_error();
 
     if (lfs_err == littlefs::Error::NOENT)
-      result = platform::storage::Error::Existence;
+      result = Error::Existence;
     else
-      result = platform::storage::Error::IO;
+      result = Error::IO;
 
     return result;
   }
@@ -62,7 +62,7 @@ auto KeyValueLittleFs::get(const std::string_view key, const std::size_t size, v
   auto const opt_bytes_read = _filesystem.read(file_hdl, data, size);
   if (!opt_bytes_read.has_value())
   {
-    result = platform::storage::Error::IO;
+    result = Error::IO;
     return result;
   }
 
@@ -72,8 +72,8 @@ auto KeyValueLittleFs::get(const std::string_view key, const std::size_t size, v
   return result;
 }
 
-auto KeyValueLittleFs::put(const std::string_view key, const std::size_t size, const void* const data)
-  -> std::optional<platform::storage::Error>
+auto KeyValueStorage_littlefs::put(const std::string_view key, const std::size_t size, const void* const data)
+  -> std::optional<Error>
 {
   auto const key_hash = std::hash<std::string_view>{}(key);
   std::stringstream key_filename;
@@ -83,7 +83,7 @@ auto KeyValueLittleFs::put(const std::string_view key, const std::size_t size, c
   auto const opt_file_hdl = _filesystem.open(key_filename.str(),
                                              static_cast<int>(littlefs::OpenFlag::RDWR) | static_cast<int>(littlefs::OpenFlag::CREAT) | static_cast<int>(littlefs::OpenFlag::TRUNC));
   if (!opt_file_hdl.has_value())
-    return platform::storage::Error::IO;
+    return Error::IO;
 
   littlefs::FileHandle const file_hdl = opt_file_hdl.value();
 
@@ -92,20 +92,20 @@ auto KeyValueLittleFs::put(const std::string_view key, const std::size_t size, c
   if (!opt_bytes_written.has_value())
   {
     (void)_filesystem.close(file_hdl);
-    return platform::storage::Error::IO;
+    return Error::IO;
   }
 
   size_t const bytes_written = opt_bytes_written.value();
   if (bytes_written != size)
   {
     (void)_filesystem.close(file_hdl);
-    return platform::storage::Error::IO;
+    return Error::IO;
   }
 
   return std::nullopt;
 }
 
-auto KeyValueLittleFs::drop(const std::string_view key) -> std::optional<platform::storage::Error>
+auto KeyValueStorage_littlefs::drop(const std::string_view key) -> std::optional<Error>
 {
   auto const key_hash = std::hash<std::string_view>{}(key);
   std::stringstream key_filename;
@@ -113,7 +113,7 @@ auto KeyValueLittleFs::drop(const std::string_view key) -> std::optional<platfor
 
   auto const rc = _filesystem.remove(key_filename.str());
   if (rc != littlefs::Error::OK)
-    return platform::storage::Error::IO;
+    return Error::IO;
 
   return std::nullopt;
 }
@@ -122,4 +122,4 @@ auto KeyValueLittleFs::drop(const std::string_view key) -> std::optional<platfor
  * NAMESPACE
  **************************************************************************************/
 
-} /* cyphal::support */
+} /* cyphal::support::platform::storage */
