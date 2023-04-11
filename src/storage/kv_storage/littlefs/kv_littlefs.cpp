@@ -39,8 +39,6 @@ KeyValueStorage_littlefs::KeyValueStorage_littlefs(littlefs::Filesystem & filesy
 auto KeyValueStorage_littlefs::get(const std::string_view key, const std::size_t size, void* const data) const
   -> std::variant<Error, std::size_t>
 {
-  std::variant <Error, std::size_t> result;
-
   auto const key_hash = std::hash<std::string_view>{}(key);
   std::stringstream key_filename;
   key_filename << key_hash;
@@ -52,11 +50,9 @@ auto KeyValueStorage_littlefs::get(const std::string_view key, const std::size_t
     auto const lfs_err = _filesystem.last_error();
 
     if (lfs_err == littlefs::Error::NOENT)
-      result = Error::Existence;
+      return Error::Existence;
     else
-      result = Error::IO;
-
-    return result;
+      return Error::IO;
   }
   littlefs::FileHandle const file_hdl = opt_file_hdl.value();
 
@@ -64,14 +60,14 @@ auto KeyValueStorage_littlefs::get(const std::string_view key, const std::size_t
   auto const opt_bytes_read = _filesystem.read(file_hdl, data, size);
   if (!opt_bytes_read.has_value())
   {
-    result = Error::IO;
-    return result;
+    (void)_filesystem.close(file_hdl);
+    return Error::IO;
   }
 
   (void)_filesystem.close(file_hdl);
 
-  result = opt_bytes_read.value();
-  return result;
+  size_t const bytes_read = opt_bytes_read.value();
+  return bytes_read;
 }
 
 auto KeyValueStorage_littlefs::put(const std::string_view key, const std::size_t size, const void* const data)
@@ -83,7 +79,7 @@ auto KeyValueStorage_littlefs::put(const std::string_view key, const std::size_t
 
   /* Open the file containing the registry value. */
   auto const opt_file_hdl = _filesystem.open(key_filename.str(),
-                                             static_cast<int>(littlefs::OpenFlag::RDWR) | static_cast<int>(littlefs::OpenFlag::CREAT) | static_cast<int>(littlefs::OpenFlag::TRUNC));
+                                             static_cast<int>(littlefs::OpenFlag::WRONLY) | static_cast<int>(littlefs::OpenFlag::CREAT) | static_cast<int>(littlefs::OpenFlag::TRUNC));
   if (!opt_file_hdl.has_value())
     return Error::IO;
 
@@ -96,6 +92,8 @@ auto KeyValueStorage_littlefs::put(const std::string_view key, const std::size_t
     (void)_filesystem.close(file_hdl);
     return Error::IO;
   }
+
+  (void)_filesystem.close(file_hdl);
 
   size_t const bytes_written = opt_bytes_written.value();
   if (bytes_written != size)
