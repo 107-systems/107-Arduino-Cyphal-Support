@@ -29,6 +29,14 @@ namespace cyphal::support::platform::storage
  * PRIVATE FREE FUNCTIONS
  **************************************************************************************/
 
+[[nodiscard]] static inline std::string toFilename(std::string_view const key)
+{
+  auto const key_hash = std::hash<std::string_view>{}(key);
+  std::stringstream key_filename;
+  key_filename << key_hash;
+  return key_filename.str();
+}
+
 [[nodiscard]] static inline Error toError(littlefs::Error const err)
 {
   static std::map<littlefs::Error, Error> const LITTLEFS_TO_STORAGE_ERROR_MAP =
@@ -68,12 +76,8 @@ KeyValueStorage_littlefs::KeyValueStorage_littlefs(littlefs::Filesystem & filesy
 auto KeyValueStorage_littlefs::get(const std::string_view key, const std::size_t size, void* const data) const
   -> std::variant<Error, std::size_t>
 {
-  auto const key_hash = std::hash<std::string_view>{}(key);
-  std::stringstream key_filename;
-  key_filename << key_hash;
-
   /* Open the file containing the registry value. */
-  auto const rc_open = _filesystem.open(key_filename.str(), littlefs::OpenFlag::RDONLY);
+  auto const rc_open = _filesystem.open(toFilename(key), littlefs::OpenFlag::RDONLY);
   if (const auto * const err = std::get_if<littlefs::Error>(&rc_open))
     return toError(*err);
 
@@ -95,12 +99,8 @@ auto KeyValueStorage_littlefs::get(const std::string_view key, const std::size_t
 auto KeyValueStorage_littlefs::put(const std::string_view key, const std::size_t size, const void* const data)
   -> std::optional<Error>
 {
-  auto const key_hash = std::hash<std::string_view>{}(key);
-  std::stringstream key_filename;
-  key_filename << key_hash;
-
   /* Open the file containing the registry value. */
-  auto const rc_open = _filesystem.open(key_filename.str(), littlefs::OpenFlag::WRONLY | littlefs::OpenFlag::CREAT | littlefs::OpenFlag::TRUNC);
+  auto const rc_open = _filesystem.open(toFilename(key), littlefs::OpenFlag::WRONLY | littlefs::OpenFlag::CREAT | littlefs::OpenFlag::TRUNC);
   if (const auto * const err = std::get_if<littlefs::Error>(&rc_open))
     return toError(*err);
 
@@ -128,11 +128,7 @@ auto KeyValueStorage_littlefs::put(const std::string_view key, const std::size_t
 
 auto KeyValueStorage_littlefs::drop(const std::string_view key) -> std::optional<Error>
 {
-  auto const key_hash = std::hash<std::string_view>{}(key);
-  std::stringstream key_filename;
-  key_filename << key_hash;
-
-  if (auto const err = _filesystem.remove(key_filename.str()); err != littlefs::Error::OK)
+  if (auto const err = _filesystem.remove(toFilename(key)); err != littlefs::Error::OK)
     return toError(err);
 
   return std::nullopt;
