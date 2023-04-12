@@ -114,18 +114,15 @@ auto KeyValueStorage::put(const std::string_view key, const std::size_t size, co
 
   size_t const bytes_written = std::get<size_t>(rc_write);
   if (bytes_written != size)
-  {
-    (void)_filesystem.close(file_hdl);
-    return Error::IO;
-  }
+    return Error::Capacity;
 
   return std::nullopt;
 }
 
 auto KeyValueStorage::drop(const std::string_view key) -> std::optional<Error>
 {
-  if (auto const err = _filesystem.remove(toFilename(key)); err != ::littlefs::Error::OK)
-    return toError(err);
+  if (auto const opt_err = _filesystem.remove(toFilename(key)); opt_err.has_value())
+    return toError(opt_err.value());
 
   return std::nullopt;
 }
