@@ -76,14 +76,12 @@ KeyValueStorage::KeyValueStorage(::littlefs::Filesystem & filesystem)
 auto KeyValueStorage::get(const std::string_view key, const std::size_t size, void* const data) const
   -> std::variant<Error, std::size_t>
 {
-  /* Open the file containing the registry value. */
   auto const rc_open = _filesystem.open(toFilename(key), ::littlefs::OpenFlag::RDONLY);
   if (const auto * const err = std::get_if<::littlefs::Error>(&rc_open))
     return toError(*err);
 
   auto const file_hdl = std::get<::littlefs::FileHandle>(rc_open);
 
-  /* Read from the file. */
   auto const rc_read = _filesystem.read(file_hdl, data, size);
   if (const auto * const err = std::get_if<::littlefs::Error>(&rc_read))
   {
@@ -99,14 +97,12 @@ auto KeyValueStorage::get(const std::string_view key, const std::size_t size, vo
 auto KeyValueStorage::put(const std::string_view key, const std::size_t size, const void* const data)
   -> std::optional<Error>
 {
-  /* Open the file containing the registry value. */
   auto const rc_open = _filesystem.open(toFilename(key), ::littlefs::OpenFlag::WRONLY | ::littlefs::OpenFlag::CREAT | ::littlefs::OpenFlag::TRUNC);
   if (const auto * const err = std::get_if<::littlefs::Error>(&rc_open))
     return toError(*err);
 
   auto const file_hdl = std::get<::littlefs::FileHandle>(rc_open);
 
-  /* Write to the file. */
   auto const rc_write = _filesystem.write(file_hdl, data, size);
   if (const auto * const err = std::get_if<::littlefs::Error>(&rc_write))
   {
