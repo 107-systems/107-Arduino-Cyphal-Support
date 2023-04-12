@@ -22,7 +22,7 @@
  * NAMESPACE
  **************************************************************************************/
 
-namespace cyphal::support::platform::storage
+namespace cyphal::support::platform::storage::littlefs
 {
 
 /**************************************************************************************
@@ -37,25 +37,25 @@ namespace cyphal::support::platform::storage
   return key_filename.str();
 }
 
-[[nodiscard]] static inline Error toError(littlefs::Error const err)
+[[nodiscard]] static inline Error toError(::littlefs::Error const err)
 {
-  static std::map<littlefs::Error, Error> const LITTLEFS_TO_STORAGE_ERROR_MAP =
+  static std::map<::littlefs::Error, Error> const LITTLEFS_TO_STORAGE_ERROR_MAP =
   {
-    {littlefs::Error::IO          , Error::IO},
-    {littlefs::Error::CORRUPT     , Error::Internal},
-    {littlefs::Error::NOENT       , Error::Existence},
-    {littlefs::Error::EXIST       , Error::Existence},
-    {littlefs::Error::NOTDIR      , Error::Existence},
-    {littlefs::Error::ISDIR       , Error::Existence},
-    {littlefs::Error::NOTEMPTY    , Error::Existence},
-    {littlefs::Error::BADF        , Error::Internal},
-    {littlefs::Error::FBIG        , Error::Capacity},
-    {littlefs::Error::INVAL       , Error::API},
-    {littlefs::Error::NOSPC       , Error::Capacity},
-    {littlefs::Error::NOMEM       , Error::Internal},
-    {littlefs::Error::NOATTR      , Error::API},
-    {littlefs::Error::NAMETOOLONG , Error::API},
-    {littlefs::Error::NO_FD_ENTRY , Error::API},
+    {::littlefs::Error::IO          , Error::IO},
+    {::littlefs::Error::CORRUPT     , Error::Internal},
+    {::littlefs::Error::NOENT       , Error::Existence},
+    {::littlefs::Error::EXIST       , Error::Existence},
+    {::littlefs::Error::NOTDIR      , Error::Existence},
+    {::littlefs::Error::ISDIR       , Error::Existence},
+    {::littlefs::Error::NOTEMPTY    , Error::Existence},
+    {::littlefs::Error::BADF        , Error::Internal},
+    {::littlefs::Error::FBIG        , Error::Capacity},
+    {::littlefs::Error::INVAL       , Error::API},
+    {::littlefs::Error::NOSPC       , Error::Capacity},
+    {::littlefs::Error::NOMEM       , Error::Internal},
+    {::littlefs::Error::NOATTR      , Error::API},
+    {::littlefs::Error::NAMETOOLONG , Error::API},
+    {::littlefs::Error::NO_FD_ENTRY , Error::API},
   };
 
   return LITTLEFS_TO_STORAGE_ERROR_MAP.at(err);
@@ -65,7 +65,7 @@ namespace cyphal::support::platform::storage
  * CTOR/DTOR
  **************************************************************************************/
 
-KeyValueStorage_littlefs::KeyValueStorage_littlefs(littlefs::Filesystem & filesystem)
+KeyValueStorage::KeyValueStorage(::littlefs::Filesystem & filesystem)
 : _filesystem{filesystem}
 { }
 
@@ -73,19 +73,19 @@ KeyValueStorage_littlefs::KeyValueStorage_littlefs(littlefs::Filesystem & filesy
  * PUBLIC MEMBER FUNCTIONS
  **************************************************************************************/
 
-auto KeyValueStorage_littlefs::get(const std::string_view key, const std::size_t size, void* const data) const
+auto KeyValueStorage::get(const std::string_view key, const std::size_t size, void* const data) const
   -> std::variant<Error, std::size_t>
 {
   /* Open the file containing the registry value. */
-  auto const rc_open = _filesystem.open(toFilename(key), littlefs::OpenFlag::RDONLY);
-  if (const auto * const err = std::get_if<littlefs::Error>(&rc_open))
+  auto const rc_open = _filesystem.open(toFilename(key), ::littlefs::OpenFlag::RDONLY);
+  if (const auto * const err = std::get_if<::littlefs::Error>(&rc_open))
     return toError(*err);
 
-  littlefs::FileHandle const file_hdl = std::get<littlefs::FileHandle>(rc_open);
+  auto const file_hdl = std::get<::littlefs::FileHandle>(rc_open);
 
   /* Read from the file. */
   auto const rc_read = _filesystem.read(file_hdl, data, size);
-  if (const auto * const err = std::get_if<littlefs::Error>(&rc_read))
+  if (const auto * const err = std::get_if<::littlefs::Error>(&rc_read))
   {
     (void)_filesystem.close(file_hdl);
     return toError(*err);
@@ -96,19 +96,19 @@ auto KeyValueStorage_littlefs::get(const std::string_view key, const std::size_t
   return std::get<size_t>(rc_read);
 }
 
-auto KeyValueStorage_littlefs::put(const std::string_view key, const std::size_t size, const void* const data)
+auto KeyValueStorage::put(const std::string_view key, const std::size_t size, const void* const data)
   -> std::optional<Error>
 {
   /* Open the file containing the registry value. */
-  auto const rc_open = _filesystem.open(toFilename(key), littlefs::OpenFlag::WRONLY | littlefs::OpenFlag::CREAT | littlefs::OpenFlag::TRUNC);
-  if (const auto * const err = std::get_if<littlefs::Error>(&rc_open))
+  auto const rc_open = _filesystem.open(toFilename(key), ::littlefs::OpenFlag::WRONLY | ::littlefs::OpenFlag::CREAT | ::littlefs::OpenFlag::TRUNC);
+  if (const auto * const err = std::get_if<::littlefs::Error>(&rc_open))
     return toError(*err);
 
-  littlefs::FileHandle const file_hdl = std::get<littlefs::FileHandle>(rc_open);
+  auto const file_hdl = std::get<::littlefs::FileHandle>(rc_open);
 
   /* Write to the file. */
   auto const rc_write = _filesystem.write(file_hdl, data, size);
-  if (const auto * const err = std::get_if<littlefs::Error>(&rc_write))
+  if (const auto * const err = std::get_if<::littlefs::Error>(&rc_write))
   {
     (void)_filesystem.close(file_hdl);
     return toError(*err);
@@ -126,9 +126,9 @@ auto KeyValueStorage_littlefs::put(const std::string_view key, const std::size_t
   return std::nullopt;
 }
 
-auto KeyValueStorage_littlefs::drop(const std::string_view key) -> std::optional<Error>
+auto KeyValueStorage::drop(const std::string_view key) -> std::optional<Error>
 {
-  if (auto const err = _filesystem.remove(toFilename(key)); err != littlefs::Error::OK)
+  if (auto const err = _filesystem.remove(toFilename(key)); err != ::littlefs::Error::OK)
     return toError(err);
 
   return std::nullopt;
@@ -138,6 +138,6 @@ auto KeyValueStorage_littlefs::drop(const std::string_view key) -> std::optional
  * NAMESPACE
  **************************************************************************************/
 
-} /* cyphal::support::platform::storage */
+} /* cyphal::support::platform::storage::littlefs */
 
 #endif /* __GNUC__ >= 11 */

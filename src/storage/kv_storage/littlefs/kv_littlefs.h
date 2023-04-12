@@ -20,21 +20,21 @@
  * NAMESPACE
  **************************************************************************************/
 
-namespace cyphal::support::platform::storage
+namespace cyphal::support::platform::storage::littlefs
 {
 
 /**************************************************************************************
  * CLASS DECLARATION
  **************************************************************************************/
 
-class KeyValueStorage_littlefs final : public interface::KeyValueStorage
+class KeyValueStorage final : public interface::KeyValueStorage
 {
 private:
-  littlefs::Filesystem & _filesystem;
+  ::littlefs::Filesystem & _filesystem;
 
 public:
-  KeyValueStorage_littlefs(littlefs::Filesystem & filesystem);
-  virtual ~KeyValueStorage_littlefs() { }
+  KeyValueStorage(::littlefs::Filesystem & filesystem);
+  virtual ~KeyValueStorage() { }
 
   /// The return value is the number of bytes read into the buffer or the error.
   [[nodiscard]] virtual auto get(const std::string_view key, const std::size_t size, void* const data) const
@@ -53,6 +53,6 @@ public:
  * NAMESPACE
  **************************************************************************************/
 
-} /* cyphal::support::platform::storage */
+} /* cyphal::support::platform::storage::littlefs */
 
 #endif /* __GNUC__ >= 11 */
