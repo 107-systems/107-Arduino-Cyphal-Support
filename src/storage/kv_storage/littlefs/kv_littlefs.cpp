@@ -26,27 +26,32 @@ namespace cyphal::support::platform::storage
 {
 
 /**************************************************************************************
- * CONSTANTS
+ * PRIVATE FREE FUNCTIONS
  **************************************************************************************/
 
-static std::map<littlefs::Error, Error> const LITTLEFS_TO_STORAGE_ERROR_MAP =
+[[nodiscard]] static inline Error toError(littlefs::Error const err)
 {
-  {littlefs::Error::IO          , Error::IO},
-  {littlefs::Error::CORRUPT     , Error::Internal},
-  {littlefs::Error::NOENT       , Error::Existence},
-  {littlefs::Error::EXIST       , Error::Existence},
-  {littlefs::Error::NOTDIR      , Error::Existence},
-  {littlefs::Error::ISDIR       , Error::Existence},
-  {littlefs::Error::NOTEMPTY    , Error::Existence},
-  {littlefs::Error::BADF        , Error::Internal},
-  {littlefs::Error::FBIG        , Error::Capacity},
-  {littlefs::Error::INVAL       , Error::API},
-  {littlefs::Error::NOSPC       , Error::Capacity},
-  {littlefs::Error::NOMEM       , Error::Internal},
-  {littlefs::Error::NOATTR      , Error::API},
-  {littlefs::Error::NAMETOOLONG , Error::API},
-  {littlefs::Error::NO_FD_ENTRY , Error::API},
-};
+  static std::map<littlefs::Error, Error> const LITTLEFS_TO_STORAGE_ERROR_MAP =
+  {
+    {littlefs::Error::IO          , Error::IO},
+    {littlefs::Error::CORRUPT     , Error::Internal},
+    {littlefs::Error::NOENT       , Error::Existence},
+    {littlefs::Error::EXIST       , Error::Existence},
+    {littlefs::Error::NOTDIR      , Error::Existence},
+    {littlefs::Error::ISDIR       , Error::Existence},
+    {littlefs::Error::NOTEMPTY    , Error::Existence},
+    {littlefs::Error::BADF        , Error::Internal},
+    {littlefs::Error::FBIG        , Error::Capacity},
+    {littlefs::Error::INVAL       , Error::API},
+    {littlefs::Error::NOSPC       , Error::Capacity},
+    {littlefs::Error::NOMEM       , Error::Internal},
+    {littlefs::Error::NOATTR      , Error::API},
+    {littlefs::Error::NAMETOOLONG , Error::API},
+    {littlefs::Error::NO_FD_ENTRY , Error::API},
+  };
+
+  return LITTLEFS_TO_STORAGE_ERROR_MAP.at(err);
+}
 
 /**************************************************************************************
  * CTOR/DTOR
@@ -69,17 +74,17 @@ auto KeyValueStorage_littlefs::get(const std::string_view key, const std::size_t
 
   /* Open the file containing the registry value. */
   auto const rc_open = _filesystem.open(key_filename.str(), littlefs::OpenFlag::RDONLY);
-  if (std::holds_alternative<littlefs::Error>(rc_open))
-    return LITTLEFS_TO_STORAGE_ERROR_MAP.at(std::get<littlefs::Error>(rc_open));
+  if (const auto * const err = std::get_if<littlefs::Error>(&rc_open))
+    return toError(*err);
 
   littlefs::FileHandle const file_hdl = std::get<littlefs::FileHandle>(rc_open);
 
   /* Read from the file. */
   auto const rc_read = _filesystem.read(file_hdl, data, size);
-  if (std::holds_alternative<littlefs::Error>(rc_read))
+  if (const auto * const err = std::get_if<littlefs::Error>(&rc_read))
   {
     (void)_filesystem.close(file_hdl);
-    return LITTLEFS_TO_STORAGE_ERROR_MAP.at(std::get<littlefs::Error>(rc_read));
+    return toError(*err);
   }
 
   (void)_filesystem.close(file_hdl);
@@ -96,17 +101,17 @@ auto KeyValueStorage_littlefs::put(const std::string_view key, const std::size_t
 
   /* Open the file containing the registry value. */
   auto const rc_open = _filesystem.open(key_filename.str(), littlefs::OpenFlag::WRONLY | littlefs::OpenFlag::CREAT | littlefs::OpenFlag::TRUNC);
-  if (std::holds_alternative<littlefs::Error>(rc_open))
-    return LITTLEFS_TO_STORAGE_ERROR_MAP.at(std::get<littlefs::Error>(rc_open));
+  if (const auto * const err = std::get_if<littlefs::Error>(&rc_open))
+    return toError(*err);
 
   littlefs::FileHandle const file_hdl = std::get<littlefs::FileHandle>(rc_open);
 
   /* Write to the file. */
   auto const rc_write = _filesystem.write(file_hdl, data, size);
-  if (std::holds_alternative<littlefs::Error>(rc_write))
+  if (const auto * const err = std::get_if<littlefs::Error>(&rc_write))
   {
     (void)_filesystem.close(file_hdl);
-    return LITTLEFS_TO_STORAGE_ERROR_MAP.at(std::get<littlefs::Error>(rc_write));
+    return toError(*err);
   }
 
   (void)_filesystem.close(file_hdl);
@@ -127,9 +132,8 @@ auto KeyValueStorage_littlefs::drop(const std::string_view key) -> std::optional
   std::stringstream key_filename;
   key_filename << key_hash;
 
-  auto const rc = _filesystem.remove(key_filename.str());
-  if (rc != littlefs::Error::OK)
-    return Error::IO;
+  if (auto const err = _filesystem.remove(key_filename.str()); err != littlefs::Error::OK)
+    return toError(err);
 
   return std::nullopt;
 }
