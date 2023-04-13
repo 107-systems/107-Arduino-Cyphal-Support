@@ -11,12 +11,20 @@
 
 This library provides support functionality for building a complete [Cyphal](https://opencyphal.org/) application in combination with [107-Arduino-Cyphal](https://github.com/107-systems/107-Arduino-Cyphal).
 
+<p align="center">
+  <a href="https://github.com/107-systems/l3xz"><img src="https://raw.githubusercontent.com/107-systems/.github/main/logo/l3xz-logo-memento-mori-github.png" width="30%"></a>
+  <a href="https://github.com/107-systems/viper"><img src="https://github.com/107-systems/.github/raw/main/logo/viper.jpg" width="30%"></a>
+</p>
+
+This library works for
+* [arduino-pico](https://github.com/earlephilhower/arduino-pico): [`Raspberry Pi Pico`](https://www.raspberrypi.org/products/raspberry-pi-pico), `Adafruit Feather RP2040`, ... :heavy_check_mark:
+
 **Features:**
-* API for obtaining a unique 64-bit ID.
+* API for obtaining a **unique 64-bit ID**.
 ```C++
 auto /* std::array<uint8_t, 16> */ const UNIQUE_ID = cyphal::support::UniqueId::instance().value();
 ```
-* API for permanent register storage and retrieval.
+* API for **persistent register storage and retrieval**.
 ```C++
 /* Declaration of key/value storage. */
 cyphal::support::platform::storage::littlefs::KeyValueStorage kv_storage(filesystem);
@@ -35,11 +43,3 @@ if (auto const opt_err = cyphal::support::save(kv_storage, *node_registry); opt_
   Serial.println(static_cast<int>(opt_err.value()));
 }
 ```
-
-<p align="center">
-  <a href="https://github.com/107-systems/l3xz"><img src="https://raw.githubusercontent.com/107-systems/.github/main/logo/l3xz-logo-memento-mori-github.png" width="30%"></a>
-  <a href="https://github.com/107-systems/viper"><img src="https://github.com/107-systems/.github/raw/main/logo/viper.jpg" width="30%"></a>
-</p>
-
-This library works for
-* [arduino-pico](https://github.com/earlephilhower/arduino-pico): [`Raspberry Pi Pico`](https://www.raspberrypi.org/products/raspberry-pi-pico), `Adafruit Feather RP2040`, ... :heavy_check_mark:
