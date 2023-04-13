@@ -8,7 +8,10 @@
 
 cyphal	KEYWORD1
 support	KEYWORD1
+platform	KEYWORD1
+storage	KEYWORD1
 UniqueId	KEYWORD1
+KeyValueStorage_littlefs	KEYWORD1
 
 #######################################
 # Methods and Functions (KEYWORD2)
@@ -16,6 +19,9 @@ UniqueId	KEYWORD1
 
 instance	KEYWORD2
 value	KEYWORD2
+get	KEYWORD2
+put	KEYWORD2
+drop	KEYWORD2
 
 #######################################
 # Constants (LITERAL1)

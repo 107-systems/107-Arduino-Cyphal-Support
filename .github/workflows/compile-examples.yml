@@ -22,6 +22,8 @@ jobs:
         # Install the library from the local path.
         - source-path: ./
         - name: 107-Arduino-UniqueId
+        - name: 107-Arduino-Cyphal
+        - name: 107-Arduino-littlefs
 
     strategy:
       fail-fast: false

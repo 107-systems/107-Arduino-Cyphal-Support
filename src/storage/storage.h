@@ -11,5 +11,4 @@
  * INCLUDE
  **************************************************************************************/
 
-#include "storage/storage.h"
-#include "uniqueid/uniqueid.h"
+#include "kv_storage/littlefs/kv_littlefs.h"
