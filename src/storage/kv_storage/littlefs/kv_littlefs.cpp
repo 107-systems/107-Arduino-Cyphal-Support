@@ -11,7 +11,7 @@
 
 #include "kv_littlefs.h"
 
-#if __GNUC__ >= 11
+#if !defined(__GNUC__) || (__GNUC__ >= 11)
 
 #include <map>
 #include <string>
@@ -133,4 +133,4 @@ auto KeyValueStorage::drop(const std::string_view key) -> std::optional<Error>
 
 } /* cyphal::support::platform::storage::littlefs */
 
-#endif /* __GNUC__ >= 11 */
+#endif /* !defined(__GNUC__) || (__GNUC__ >= 11) */
