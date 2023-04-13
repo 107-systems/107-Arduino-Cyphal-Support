@@ -13,7 +13,28 @@ This library provides support functionality for building a complete [Cyphal](htt
 
 **Features:**
 * API for obtaining a unique 64-bit ID.
+```C++
+auto /* std::array<uint8_t, 16> */ const UNIQUE_ID = cyphal::support::UniqueId::instance().value();
+```
 * API for permanent register storage and retrieval.
+```C++
+/* Declaration of key/value storage. */
+cyphal::support::platform::storage::littlefs::KeyValueStorage kv_storage(filesystem);
+
+/* Load persistently stored registers from a non-volatile memory (EEPROM, flash, etc.). */
+if (auto const opt_err = cyphal::support::load(kv_storage, *node_registry); opt_err.has_value())
+{
+  Serial.print("load failed with error code ");
+  Serial.println(static_cast<int>(opt_err.value()));
+}
+
+/* Store persistent registers to a non-volatile memory (EEPROM, flash, etc.). */
+if (auto const opt_err = cyphal::support::save(kv_storage, *node_registry); opt_err.has_value())
+{
+  Serial.print("save failed with error code ");
+  Serial.println(static_cast<int>(opt_err.value()));
+}
+```
 
 <p align="center">
   <a href="https://github.com/107-systems/l3xz"><img src="https://raw.githubusercontent.com/107-systems/.github/main/logo/l3xz-logo-memento-mori-github.png" width="30%"></a>
