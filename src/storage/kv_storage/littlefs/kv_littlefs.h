@@ -14,7 +14,7 @@
 #include <107-Arduino-Cyphal.h>
 #include <107-Arduino-littlefs.h>
 
-#if __GNUC__ >= 11
+#if !defined(__GNUC__) || (__GNUC__ >= 11)
 
 /**************************************************************************************
  * NAMESPACE
@@ -55,4 +55,4 @@ public:
 
 } /* cyphal::support::platform::storage::littlefs */
 
-#endif /* __GNUC__ >= 11 */
+#endif /* !defined(__GNUC__) || (__GNUC__ >= 11) */
