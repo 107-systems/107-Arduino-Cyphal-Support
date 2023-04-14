@@ -43,3 +43,10 @@ if (auto const opt_err = cyphal::support::save(kv_storage, *node_registry); opt_
   Serial.println(static_cast<int>(opt_err.value()));
 }
 ```
+* API for performing **synchronous and asynchronous resets**.
+```C++
+/* Synchronous reset: */
+cyphal::support::platform::reset_sync(std::chrono::milliseconds(5000));
+/* Asynchronous reset: */
+cyphal::support::platform::reset_async(std::chrono::milliseconds(5000));
+```
