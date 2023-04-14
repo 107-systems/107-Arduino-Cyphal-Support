@@ -5,12 +5,26 @@
  * Contributors: https://github.com/107-systems/107-Arduino-Cyphal-Support/graphs/contributors.
  */
 
-#pragma once
-
 /**************************************************************************************
  * INCLUDE
  **************************************************************************************/
 
-#include "reset/reset.h"
-#include "storage/storage.h"
-#include "uniqueid/uniqueid.h"
+#include <107-Arduino-Cyphal-Support.h>
+
+/**************************************************************************************
+ * SETUP/LOOP
+ **************************************************************************************/
+
+void setup()
+{
+  Serial.begin(115200);
+  while (!Serial) { }
+
+  Serial.println("Trigger sync reset in 5 seconds ...");
+  cyphal::support::platform::reset_sync(std::chrono::milliseconds(5000));
+}
+
+void loop()
+{
+
+}
