@@ -11,6 +11,9 @@
  * INCLUDE
  **************************************************************************************/
 
+#ifdef ARDUINO_ARCH_RENESAS
+# undef abs
+#endif
 #include <chrono>
 #include <optional>
 
