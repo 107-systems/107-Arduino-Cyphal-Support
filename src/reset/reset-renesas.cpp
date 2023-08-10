@@ -5,17 +5,18 @@
  * Contributors: https://github.com/107-systems/107-Arduino-Cyphal-Support/graphs/contributors.
  */
 
-#pragma once
-
 /**************************************************************************************
  * INCLUDE
  **************************************************************************************/
 
-#ifdef ARDUINO_ARCH_RENESAS
-# undef abs
-#endif
-#include <chrono>
-#include <optional>
+#include "reset.h"
+
+#if defined(ARDUINO_ARCH_RENESAS)
+
+#include <WDT.h>
+
+/* Provide prototype for Arduino's delay function. */
+extern "C" void delay(unsigned long);
 
 /**************************************************************************************
  * NAMESPACE
@@ -25,55 +26,64 @@ namespace cyphal::support::platform
 {
 
 /**************************************************************************************
- * TYPEDEF
+ * GLOBAL CONSTANTS
  **************************************************************************************/
 
-enum class Error
-{
-  InvalidParam,
-};
+#if defined(ARDUINO_MINIMA) || defined(ARDUINO_UNOWIFIR4)
+static uint32_t const WATCHDOG_MAX_DELAY_ms = 5592;
+#elif defined(ARDUINO_PORTENTA_C33)
+static uint32_t const WATCHDOG_MAX_DELAY_ms = 2684;
+#else
+# error "Your selected Renesas MCU is not supported"
+#endif
 
 /**************************************************************************************
- * FUNCTION DECLARATION
+ * GLOBAL VARIABLES
  **************************************************************************************/
 
-/* Immediately after calling this method a reset is performed. */
+static bool is_async_reset_pending_flag = false;
+
+/**************************************************************************************
+ * FUNCTION DEFINITION
+ **************************************************************************************/
+
 std::optional<Error> reset()
-#if !defined(ARDUINO_ARCH_RP2040) && !defined(ARDUINO_ARCH_RENESAS)
-__attribute__ ((error("Currently the reset API only supports ARDUINO_ARCH_RP2040 and ARDUINO_ARCH_RENESAS.")))
-#endif
-;
+{
+  WDT.begin(1); /* Minium delay is 1 ms. */
+  return std::nullopt;
+}
 
-/* This method performs a reset in 'ms' milliseconds after its invocation,
- * blocking while waiting for the time to expire.
- */
 std::optional<Error> reset_sync(std::chrono::milliseconds const ms)
-#if !defined(ARDUINO_ARCH_RP2040) && !defined(ARDUINO_ARCH_RENESAS)
-__attribute__ ((error("Currently the reset API only supports ARDUINO_ARCH_RP2040 and ARDUINO_ARCH_RENESAS.")))
-#endif
-;
+{
+  if (ms.count() > WATCHDOG_MAX_DELAY_ms)
+    return Error::InvalidParam;
 
-/* This method performs a reset in 'ms' milliseconds after its invocation,
- * but returns immediately after its invocation.
- */
+  WDT.begin(ms.count());
+  for(;;) { delay(100); } /* Wait for the watchdog to bite. */
+  return std::nullopt;
+}
+
 std::optional<Error> reset_async(std::chrono::milliseconds const ms)
-#if !defined(ARDUINO_ARCH_RP2040) && !defined(ARDUINO_ARCH_RENESAS)
-__attribute__ ((error("Currently the reset API only supports ARDUINO_ARCH_RP2040 and ARDUINO_ARCH_RENESAS.")))
-#endif
-;
+{
+  if (ms.count() > WATCHDOG_MAX_DELAY_ms)
+    return Error::InvalidParam;
 
-/* Returns true if currently an async reset is pending. Since this
- * functionality is implemented via watchdog it is necessary to stop
- * regular watchdog feeding i.e. in the main loop.
- */
+  WDT.begin(ms.count());
+
+  is_async_reset_pending_flag = true;
+
+  return std::nullopt;
+}
+
 bool is_async_reset_pending()
-#if !defined(ARDUINO_ARCH_RP2040) && !defined(ARDUINO_ARCH_RENESAS)
-__attribute__ ((error("Currently the reset API only supports ARDUINO_ARCH_RP2040 and ARDUINO_ARCH_RENESAS.")))
-#endif
-;
+{
+  return is_async_reset_pending_flag;
+}
 
 /**************************************************************************************
  * NAMESPACE
  **************************************************************************************/
 
 } /* cyphal::support::platform */
+
+#endif /* defined(ARDUINO_ARCH_RENESAS) */

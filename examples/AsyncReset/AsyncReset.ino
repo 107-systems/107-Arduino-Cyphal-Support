@@ -27,7 +27,12 @@ void setup()
   while (!Serial) { }
 
   Serial.println("Trigger async reset in 5 seconds ...");
-  cyphal::support::platform::reset_async(std::chrono::milliseconds(5000));
+  auto const rc = cyphal::support::platform::reset_async(std::chrono::milliseconds(5000));
+  if (rc.has_value()) {
+    Serial.print("reset_async failed with error code ");
+    Serial.println(static_cast<int>(rc.value()));
+  }
+
   start = millis();
 }
 
