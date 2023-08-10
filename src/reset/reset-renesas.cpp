@@ -49,7 +49,7 @@ static bool is_async_reset_pending_flag = false;
 
 std::optional<Error> reset()
 {
-  WDT.begin(1); /* Minium delay is 1 ms. */
+  WDT.begin(1); /* Minimum delay is 1 ms. */
   return std::nullopt;
 }
 
