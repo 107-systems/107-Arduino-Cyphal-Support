@@ -24,7 +24,7 @@ namespace cyphal::support
  * CLASS DECLARATION
  **************************************************************************************/
 
-class UniqueId : public impl::UniqueId16 { };
+class UniqueId : public ::impl::UniqueId16 { };
 
 /**************************************************************************************
  * NAMESPACE
